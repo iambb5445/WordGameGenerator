@@ -10,7 +10,7 @@ public class Visualizer : MonoBehaviour {
     private List<CellVisualizer> selectionSequence = new List<CellVisualizer>();
     void Start()
     {
-        //  TODO remove this
+        //  TODO call setLevel from outside
         GridLevel gridLevel = new GridLevel(4, 5, GridLevel.eightDirectionsMovement);
         setLevel(gridLevel);
     }
@@ -56,14 +56,22 @@ public class Visualizer : MonoBehaviour {
         }
         else
         {
-            Cell lastCell = selectionSequence.Count == 0? null
-                : selectionSequence[selectionSequence.Count - 1].getCell();
-            if (level.isTransitionAllowed(lastCell, selectedCellVisualizer.getCell()))
+            List<Cell> selectionSequenceCells = getCells(selectionSequence);
+            if (level.isTransitionAllowed(selectionSequenceCells, selectedCellVisualizer.getCell()))
             {
                 selectedCellVisualizer.showSelection();
                 selectionSequence.Add(selectedCellVisualizer);
             }
         }
+    }
+    private static List<Cell> getCells(List<CellVisualizer> cellVisualizers)
+    {
+        List<Cell> cells = new List<Cell>();
+        foreach(CellVisualizer cellVisualizer in cellVisualizers)
+        {
+            cells.Add(cellVisualizer.getCell());
+        }
+        return cells;
     }
     private CellVisualizer getMousePointed()
     {
