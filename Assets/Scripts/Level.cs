@@ -6,9 +6,21 @@ using UnityEngine;
 public class NeighboringLayer
 {
     Dictionary<Cell, List<Cell>> neighbors = new Dictionary<Cell, List<Cell>>();
+    public bool containsTransition(Cell startCell, Cell endCell)
+    {
+        if (neighbors.ContainsKey(startCell))
+        {
+            return neighbors[startCell].Contains(endCell);
+        }
+        return false;
+    }
     public Cell[] getNeighbors(Cell cell)
     {
-        return neighbors[cell].ToArray();
+        if (neighbors.ContainsKey(cell))
+        {
+            return neighbors[cell].ToArray();
+        }
+        return new Cell[]{ };
     }
     public void addRelation(Cell startCell, Cell endCell)
     {
@@ -20,7 +32,7 @@ public class NeighboringLayer
     }
 }
 
-public class Level
+public abstract class Level
 {
     protected List<Cell> cells = new List<Cell>();
     protected List<NeighboringLayer> neighboringLayers = new List<NeighboringLayer>();
@@ -28,6 +40,7 @@ public class Level
     {
         return cells.ToArray();
     }
+    public abstract bool isTransitionAllowed(Cell startCell, Cell endCell);
 }
 
 public class GridLevel: Level
@@ -97,11 +110,26 @@ public class GridLevel: Level
     }
     private Cell getCell(int x, int y)
     {
-        int index = x * ySize - y;
-        if (index < 0 || index >= cells.Count)
+        if (x < 0 || x >= xSize || y < 0 || y >= ySize)
         {
             return null;
         }
+        int index = x * ySize + y;
         return cells[index];
+    }
+    public override bool isTransitionAllowed(Cell startCell, Cell endCell)
+    {
+        if (startCell == null)
+        {
+            return true;
+        }
+        foreach (NeighboringLayer neighboringLayer in neighboringLayers)
+        {
+            if (neighboringLayer.containsTransition(startCell, endCell))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class Visualizer : MonoBehaviour {
     [SerializeField]
     GameObject cellPrefab;
+    private Level level;
     private List<CellVisualizer> cellVisualizers;
     private List<CellVisualizer> selectionSequence = new List<CellVisualizer>();
     void Start()
@@ -15,6 +16,7 @@ public class Visualizer : MonoBehaviour {
     }
     void setLevel(Level level)
     {
+        this.level = level;
         cellVisualizers = new List<CellVisualizer>();
         Cell[] cells = level.getCells();
         foreach (Cell cell in cells)
@@ -38,12 +40,12 @@ public class Visualizer : MonoBehaviour {
     }
     private void checkSelection()
     {
-        CellVisualizer cellVisualizer = getMousePointed();
-        if (cellVisualizer == null)
+        CellVisualizer selectedCellVisualizer = getMousePointed();
+        if (selectedCellVisualizer == null)
         {
             return;
         }
-        int index = selectionSequence.IndexOf(cellVisualizer);
+        int index = selectionSequence.IndexOf(selectedCellVisualizer);
         if (index >= 0) // exists in sequence
         {
             if (index == (selectionSequence.Count - 2))
@@ -54,8 +56,13 @@ public class Visualizer : MonoBehaviour {
         }
         else
         {
-            cellVisualizer.showSelection();
-            selectionSequence.Add(cellVisualizer);
+            Cell lastCell = selectionSequence.Count == 0? null
+                : selectionSequence[selectionSequence.Count - 1].getCell();
+            if (level.isTransitionAllowed(lastCell, selectedCellVisualizer.getCell()))
+            {
+                selectedCellVisualizer.showSelection();
+                selectionSequence.Add(selectedCellVisualizer);
+            }
         }
     }
     private CellVisualizer getMousePointed()

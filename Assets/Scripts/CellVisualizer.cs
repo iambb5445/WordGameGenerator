@@ -38,4 +38,8 @@ public class CellVisualizer : MonoBehaviour {
     {
         return cell.getText();
     }
+    public Cell getCell()
+    {
+        return cell;
+    }
 }
