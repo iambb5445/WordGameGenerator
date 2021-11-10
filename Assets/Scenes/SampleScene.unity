@@ -213,7 +213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c417d1f6eb55aa6488a1f782a1d5f3a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cell: {fileID: 1303293232185980, guid: c86d895efe77c494886eab8787682d85, type: 2}
+  cellPrefab: {fileID: 1303293232185980, guid: c86d895efe77c494886eab8787682d85, type: 2}
 --- !u!4 &1047885318
 Transform:
   m_ObjectHideFlags: 0

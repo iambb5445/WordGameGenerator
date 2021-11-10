@@ -36,7 +36,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4835963648103460}
   - component: {fileID: 212855223737771604}
-  - component: {fileID: 114022643687574946}
   - component: {fileID: 61418951163232342}
   m_Layer: 0
   m_Name: Node
@@ -150,7 +149,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.0011936203, y: -0.0011936426}
   m_SpriteTilingProperty:
     border: {x: 0.049999997, y: 0.049999997, z: 0.049999997, w: 0.049999997}
     pivot: {x: 0.5, y: 0.5}
@@ -161,7 +160,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.13, y: 0.13}
+  m_Size: {x: 0.09896587, y: 0.09419131}
   m_EdgeRadius: 0
 --- !u!102 &102652933535087298
 TextMesh:
@@ -184,17 +183,6 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4278190080
---- !u!114 &114022643687574946
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1310344667923300}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114757206083331762
 MonoBehaviour:
   m_ObjectHideFlags: 1
