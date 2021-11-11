@@ -11,8 +11,9 @@ public class Visualizer : MonoBehaviour {
     void Start()
     {
         //  TODO call setLevel from outside
-        GridLevel gridLevel = new GridLevel(4, 5, GridLevel.eightDirectionsMovement);
-        setLevel(gridLevel);
+        Level level = new GridLevel(4, 5, GridLevel.eightDirectionsMovement);
+        // Level level = new CircleLevel(6);
+        setLevel(level);
     }
     void setLevel(Level level)
     {

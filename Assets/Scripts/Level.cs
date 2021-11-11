@@ -34,13 +34,36 @@ public class NeighboringLayer
 
 public abstract class Level
 {
+    protected static float cellSize = 1.5f;
     protected List<Cell> cells = new List<Cell>();
     protected List<NeighboringLayer> neighboringLayers = new List<NeighboringLayer>();
     public Cell[] getCells()
     {
         return cells.ToArray();
     }
-    public abstract bool isTransitionAllowed(List<Cell> selected, Cell newCell);
+    public bool isTransitionAllowed(List<Cell> selected, Cell newCell)
+    {
+        foreach (NeighboringLayer neighboringLayer in neighboringLayers)
+        {
+            bool isLayerSuitable = true;
+            for(int i = 0; i < selected.Count - 1; i++)
+            {
+                if (!neighboringLayer.containsTransition(selected[i], selected[i + 1]))
+                {
+                    isLayerSuitable = false;
+                }
+            }
+            if (isLayerSuitable)
+            {
+                Cell lastCell = selected.Count > 0? selected[selected.Count - 1] : null;
+                if(lastCell == null || neighboringLayer.containsTransition(lastCell, newCell))
+                {
+                    return true;
+                }
+            }
+        }
+        return selected.Count == 0;
+    }
 }
 
 public class GridLevel: Level
@@ -82,7 +105,7 @@ public class GridLevel: Level
             {
                 // char randChar = (char)('A' + Random.Range(0, 26));
                 char character = (char)('A' + i * ySize + j);
-                this.cells.Add(new Cell(character.ToString(), new Vector2((i-2)*1.5f, (j-2)*1.5f)));
+                this.cells.Add(new Cell(character.ToString(), new Vector2((i-2)*cellSize, (j-2)*cellSize)));
             }
         }
     }
@@ -118,27 +141,44 @@ public class GridLevel: Level
         int index = x * ySize + y;
         return cells[index];
     }
-    public override bool isTransitionAllowed(List<Cell> selected, Cell newCell)
+}
+
+public class CircleLevel: Level
+{
+    private int cellCount;
+    public CircleLevel(int cellCount)
     {
-        foreach (NeighboringLayer neighboringLayer in neighboringLayers)
+        this.cellCount = cellCount;
+        setCells();
+        setRelations();
+    }
+    private void setCells()
+    {
+        for (int i = 0; i < cellCount; i++)
         {
-            bool isLayerSuitable = true;
-            for(int i = 0; i < selected.Count - 1; i++)
+            // char randChar = (char)('A' + Random.Range(0, 26));
+            char character = (char)('A' + i);
+            float degreeDiff = 360f / cellCount;
+            float degreeDiffRadian = (2 * Mathf.PI) / cellCount;
+            float cellDiameter = cellSize * Mathf.Sqrt(2);
+            float radius = cellDiameter / Mathf.Cos(degreeDiffRadian / 2);
+            Vector2 position = Quaternion.Euler(0, 0, i * degreeDiff) * (Vector2.up * radius);
+            this.cells.Add(new Cell(character.ToString(), position));
+        }
+    }
+    private void setRelations()
+    {
+        NeighboringLayer neighboringLayer = new NeighboringLayer();
+        foreach (Cell startCell in cells)
+        {
+            foreach (Cell endCell in cells)
             {
-                if (!neighboringLayer.containsTransition(selected[i], selected[i + 1]))
+                if (startCell != endCell)
                 {
-                    isLayerSuitable = false;
-                }
-            }
-            if (isLayerSuitable)
-            {
-                Cell lastCell = selected.Count > 0? selected[selected.Count - 1] : null;
-                if(lastCell == null || neighboringLayer.containsTransition(lastCell, newCell))
-                {
-                    return true;
+                    neighboringLayer.addRelation(startCell, endCell);
                 }
             }
         }
-        return false;
+        neighboringLayers.Add(neighboringLayer);
     }
 }
