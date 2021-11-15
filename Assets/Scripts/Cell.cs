@@ -12,6 +12,13 @@ public class Cell
         this.text = text;
         this.position = position;
     }
+    private void updateVisualizer()
+    {
+        if (this.cellVisualizer != null)
+        {
+            cellVisualizer.setCell(this);
+        }
+    }
     public Vector2 getPosition()
     {
         return position;
@@ -19,6 +26,11 @@ public class Cell
     public string getText()
     {
         return text;
+    }
+    public void setText(string text)
+    {
+        this.text = text;
+        updateVisualizer();
     }
     public void setCellVisualizer(CellVisualizer cellVisualizer)
     {

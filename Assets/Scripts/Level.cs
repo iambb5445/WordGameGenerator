@@ -30,6 +30,11 @@ public class NeighboringLayer
         }
         neighbors[startCell].Add(endCell);
     }
+    public Cell getRandomNeighbor(Cell startCell)
+    {
+        int index = Random.Range(0, neighbors[startCell].Count);
+        return neighbors[startCell][index];
+    }
 }
 
 public abstract class Level
@@ -37,6 +42,35 @@ public abstract class Level
     protected static float cellSize = 1.5f;
     protected List<Cell> cells = new List<Cell>();
     protected List<NeighboringLayer> neighboringLayers = new List<NeighboringLayer>();
+    protected List<string> goals;
+    public void initiate(List<string> goals)
+    {
+        foreach (Cell cell in cells)
+        {
+            cell.setText("B");
+        }
+        this.goals = goals;
+        List<List<string>> goalParts = getParts(goals);
+    }
+    private Cell getRandomCell()
+    {
+        int index = Random.Range(0, cells.Count);
+        return cells[index];
+    }
+    private List<List<string>> getParts(List<string> words)
+    {
+        List<List<string>> parts = new List<List<string>>();
+        foreach (string word in words)
+        {
+            List<string> wordParts = new List<string>();
+            foreach (char character in word)
+            {
+                wordParts.Add(character.ToString());
+            }
+            parts.Add(wordParts);
+        }
+        return parts;
+    }
     public Cell[] getCells()
     {
         return cells.ToArray();
@@ -103,9 +137,7 @@ public class GridLevel: Level
         {
             for (int j = 0; j < ySize; j++)
             {
-                // char randChar = (char)('A' + Random.Range(0, 26));
-                char character = (char)('A' + i * ySize + j);
-                this.cells.Add(new Cell(character.ToString(), new Vector2((i-2)*cellSize, (j-2)*cellSize)));
+                this.cells.Add(new Cell(null, new Vector2((i-2)*cellSize, (j-2)*cellSize)));
             }
         }
     }
