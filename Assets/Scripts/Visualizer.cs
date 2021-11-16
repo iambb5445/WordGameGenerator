@@ -8,15 +8,7 @@ public class Visualizer : MonoBehaviour {
     private Level level;
     private List<CellVisualizer> cellVisualizers;
     private List<CellVisualizer> selectionSequence = new List<CellVisualizer>();
-    void Start()
-    {
-        //  TODO call setLevel from outside
-        GameDesigner gameDesigner = new GameDesigner(); // TODO
-        Level level = new GridLevel(3, 4, GridLevel.eightDirectionsMovement);
-        gameDesigner.design("cat", level);
-        setLevel(level);
-    }
-    void setLevel(Level level)
+    public void setLevel(Level level)
     {
         this.level = level;
         cellVisualizers = new List<CellVisualizer>();

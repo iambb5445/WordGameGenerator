@@ -30,11 +30,6 @@ public class NeighboringLayer
         }
         neighbors[startCell].Add(endCell);
     }
-    public Cell getRandomNeighbor(Cell startCell)
-    {
-        int index = Random.Range(0, neighbors[startCell].Count);
-        return neighbors[startCell][index];
-    }
 }
 
 public abstract class Level
@@ -43,21 +38,121 @@ public abstract class Level
     protected List<Cell> cells = new List<Cell>();
     protected List<NeighboringLayer> neighboringLayers = new List<NeighboringLayer>();
     protected List<string> goals;
-    public void initiate(List<string> goals)
+    public virtual void initiate(List<string> goals)
+    {
+        this.goals = new List<string>();
+        List<List<string>> goalParts = getParts(goals);
+        for(int index = 0; index < goals.Count; index++)
+        {
+            if (putWithBacktrack(goalParts[index]))
+            {
+                this.goals.Add(goals[index]);
+            }
+        }
+    }
+    protected void fillEmptyCells()
     {
         foreach (Cell cell in cells)
         {
-            cell.setText("B");
+            if (cell.getText() == null)
+            {
+                char randomChar = (char)('A' + Random.Range(0, 26));
+                cell.setText(randomChar.ToString());
+            }
         }
-        this.goals = goals;
-        List<List<string>> goalParts = getParts(goals);
+    }
+    private bool putWithBacktrack(List<string> wordParts, List<Cell> answer=null, NeighboringLayer neighboringLayer=null)
+    {
+        if (answer == null)
+        {
+            answer = new List<Cell>();
+        }
+        if (wordParts.Count == answer.Count)
+        {
+            return true;
+        }
+        if (answer.Count == 0)
+        {
+            List<int> neighboringLayerOrder = getRandomOrder(neighboringLayers.Count);
+            foreach(int neighboringLayerIndex in neighboringLayerOrder)
+            {
+                List<int> cellOrder = getRandomOrder(cells.Count);
+                foreach (int cellIndex in cellOrder)
+                {
+                    if (tryBacktrackPath(wordParts, answer, neighboringLayers[neighboringLayerIndex], cells[cellIndex]))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Cell lastCell = answer[answer.Count - 1];
+            Cell[] neighbors = neighboringLayer.getNeighbors(lastCell);
+            List<int> neighborOrder = getRandomOrder(neighbors.Length);
+            foreach (int neighborIndex in neighborOrder)
+            {
+                if (tryBacktrackPath(wordParts, answer, neighboringLayer, neighbors[neighborIndex]))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private bool tryBacktrackPath(List<string> wordParts, List<Cell> answer, NeighboringLayer neighboringLayer, Cell cell)
+    {
+        if (answer.Contains(cell)) // no repeat
+        {
+            return false;
+        }
+        string wordPart = wordParts[answer.Count];
+        if (cell.getText() == null)
+        {
+            cell.setText(wordPart);
+            answer.Add(cell);
+            if (putWithBacktrack(wordParts, answer, neighboringLayer))
+            {
+                return true;
+            }
+            answer.RemoveAt(answer.Count - 1);
+            cell.setText(null);
+        }
+        else if (cell.getText() == wordPart)
+        {
+            answer.Add(cell);
+            if (putWithBacktrack(wordParts, answer, neighboringLayer))
+            {
+                return true;
+            }
+            answer.RemoveAt(answer.Count - 1);
+        }
+        return false;
+    }
+
+    private List<int> getRandomOrder(int size)
+    {
+        List<int> orderedIndices = new List<int>();
+        for(int i = 0; i < size; i++)
+        {
+            orderedIndices.Add(i);
+        }
+        List<int> shuffledIndices = new List<int>();
+        for(int i = 0; i < size; i++)
+        {
+            int nextIndex = Random.Range(0, orderedIndices.Count);
+            shuffledIndices.Add(orderedIndices[nextIndex]);
+            orderedIndices.RemoveAt(nextIndex);
+        }
+        return shuffledIndices;
     }
     private Cell getRandomCell()
     {
         int index = Random.Range(0, cells.Count);
         return cells[index];
     }
-    private List<List<string>> getParts(List<string> words)
+    protected List<List<string>> getParts(List<string> words)
     {
         List<List<string>> parts = new List<List<string>>();
         foreach (string word in words)
@@ -188,14 +283,12 @@ public class CircleLevel: Level
     {
         for (int i = 0; i < cellCount; i++)
         {
-            // char randChar = (char)('A' + Random.Range(0, 26));
-            char character = (char)('A' + i);
             float degreeDiff = 360f / cellCount;
             float degreeDiffRadian = (2 * Mathf.PI) / cellCount;
             float cellDiameter = cellSize * Mathf.Sqrt(2);
             float radius = cellDiameter / Mathf.Cos(degreeDiffRadian / 2);
             Vector2 position = Quaternion.Euler(0, 0, i * degreeDiff) * (Vector2.up * radius);
-            this.cells.Add(new Cell(character.ToString(), position));
+            this.cells.Add(new Cell(null, position));
         }
     }
     private void setRelations()
