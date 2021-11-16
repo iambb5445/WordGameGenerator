@@ -50,7 +50,7 @@ public abstract class Level
         {
             if (putWithBacktrack(goalParts[index]))
             {
-                this.goals.Add(goals[index]);
+                this.goals.Add(goals[index].ToUpper());
             }
         }
         fillEmptyCells();
