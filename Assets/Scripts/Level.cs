@@ -38,6 +38,10 @@ public abstract class Level
     protected List<Cell> cells = new List<Cell>();
     protected List<NeighboringLayer> neighboringLayers = new List<NeighboringLayer>();
     protected List<string> goals;
+    public List<string> getGoals()
+    {
+        return goals;
+    }
     public virtual void initiate(List<string> goals)
     {
         this.goals = new List<string>();
@@ -49,6 +53,7 @@ public abstract class Level
                 this.goals.Add(goals[index]);
             }
         }
+        fillEmptyCells();
     }
     protected void fillEmptyCells()
     {
@@ -160,7 +165,7 @@ public abstract class Level
             List<string> wordParts = new List<string>();
             foreach (char character in word)
             {
-                wordParts.Add(character.ToString());
+                wordParts.Add(character.ToString().ToUpper());
             }
             parts.Add(wordParts);
         }

@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Visualizer : MonoBehaviour {
     [SerializeField]
     GameObject cellPrefab;
+    [SerializeField]
+    Text hintText;
     private Level level;
     private List<CellVisualizer> cellVisualizers;
     private List<CellVisualizer> selectionSequence = new List<CellVisualizer>();
@@ -19,6 +22,19 @@ public class Visualizer : MonoBehaviour {
             CellVisualizer cellVisualizer = cellObject.GetComponentInChildren<CellVisualizer>();
             cellVisualizer.setCell(cell);
             cellVisualizers.Add(cellVisualizer);
+        }
+        setHint(level.getGoals());
+    }
+    private void setHint(List<string> goals)
+    {
+        hintText.text = "";
+        for(int goalIndex = 0; goalIndex < goals.Count; goalIndex++)
+        {
+            hintText.text += goals[goalIndex];
+            if (goalIndex != goals.Count - 1)
+            {
+                hintText.text += "\n";
+            }
         }
     }
     void Update()
