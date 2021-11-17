@@ -3,17 +3,71 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-    Visualizer visualizer;
+    static GameManager instanceReference;
+    LevelVisualizer levelVisualizer;
+    List<string> goals;
+    List<bool> goalGuessed;
+    LevelData levelData;
+    public static GameManager getInstance()
+    {
+        return instanceReference;
+    }
+    public LevelData getLevelData()
+    {
+        return levelData;
+    }
     public void Start()
     {
-        GenerateLevel();
+        if (instanceReference == null)
+        {
+            instanceReference = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
-    public void GenerateLevel()
+    public void loadLevelScene()
     {
-        visualizer = FindObjectOfType<Visualizer>();
-        GameDesigner gameDesigner = new GameDesigner(); // TODO
-        Level level = new GridLevel(3, 4, GridLevel.eightDirectionsMovement);
-        gameDesigner.design("cat", level);
-        visualizer.setLevel(level);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+    }
+    public void generateLevelInfo()
+    {
+        levelData = LevelDataInputManager.getInstance().getLevelData();
+        GameDesigner.design();
+        setGoals();
+    }
+    public void setGoals()
+    {
+        this.goals = levelData.level.getGoals();
+        goalGuessed = new List<bool>();
+        foreach(string goal in goals)
+        {
+            goalGuessed.Add(false);
+        }
+    }
+    public void checkWord(string word)
+    {
+        int index = goals.IndexOf(word);
+        if (index >= 0)
+        {
+            if (goalGuessed[index] == false)
+            {
+                goalGuessed[index] = true;
+                checkVictory();
+            }
+        }
+    }
+    public void checkVictory()
+    {
+        foreach(bool condition in goalGuessed)
+        {
+            if (!condition)
+            {
+                return;
+            }
+        }
+        Debug.Log("victory!");
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Visualizer : MonoBehaviour {
+public class LevelVisualizer : MonoBehaviour {
     [SerializeField]
     GameObject cellPrefab;
     [SerializeField]
@@ -11,6 +11,10 @@ public class Visualizer : MonoBehaviour {
     private Level level;
     private List<CellVisualizer> cellVisualizers;
     private List<CellVisualizer> selectionSequence = new List<CellVisualizer>();
+    public void Start()
+    {
+        setLevel(GameManager.getInstance().getLevelData().level);
+    }
     public void setLevel(Level level)
     {
         this.level = level;
@@ -105,6 +109,6 @@ public class Visualizer : MonoBehaviour {
             cellVisualizer.hideVisualization();
         }
         selectionSequence.Clear();
-        Debug.Log(word);
+        GameManager.getInstance().checkWord(word);
     }
 }
