@@ -202,32 +202,60 @@ public abstract class Level
 
 public class GridLevel: Level
 {
+    public enum MovementType
+    {
+        None,
+        eightDirectoinal,
+        fourDirectoinal,
+        eightDirectoinalNoChange,
+        fourDirectoinalNoChange
+    }
     private static Vector2Int up = new Vector2Int(0, 1);
     private static Vector2Int down = new Vector2Int(0, -1);
     private static Vector2Int left = new Vector2Int(-1, 0);
     private static Vector2Int right = new Vector2Int(1, 0);
-    public static List<List<Vector2Int>> eightDirectionsMovement = new List<List<Vector2Int>>()
+    private static List<List<Vector2Int>> eightDirectionalMovement = new List<List<Vector2Int>>()
     {
         new List<Vector2Int>(){up, down, left, right, up+left, up+right, down+left, down+right}
     };
-    public static List<List<Vector2Int>> fourDirectionsMovement = new List<List<Vector2Int>>()
+    private static List<List<Vector2Int>> fourDirectionalMovement = new List<List<Vector2Int>>()
     {
         new List<Vector2Int>(){up, down, left, right}
     };
-    public static List<List<Vector2Int>> fourDirectionsNoChangeMovement = new List<List<Vector2Int>>()
+    private static List<List<Vector2Int>> fourDirectionalNoChangeMovement = new List<List<Vector2Int>>()
     {
         new List<Vector2Int>(){up},
         new List<Vector2Int>(){down},
         new List<Vector2Int>(){left},
         new List<Vector2Int>(){right}
     };
+    private static List<List<Vector2Int>> eightDirectionalNoChangeMovement = new List<List<Vector2Int>>()
+    {
+        new List<Vector2Int>(){up},
+        new List<Vector2Int>(){down},
+        new List<Vector2Int>(){left},
+        new List<Vector2Int>(){right},
+        new List<Vector2Int>(){up + right},
+        new List<Vector2Int>(){up + left},
+        new List<Vector2Int>(){down + right},
+        new List<Vector2Int>(){down + left}
+    };
+    private static Dictionary<MovementType, List<List<Vector2Int>>> movementMapping =
+        new Dictionary<MovementType, List<List<Vector2Int>>>()
+        {
+            {MovementType.eightDirectoinal, eightDirectionalMovement},
+            {MovementType.fourDirectoinal, fourDirectionalMovement},
+            {MovementType.eightDirectoinalNoChange, eightDirectionalNoChangeMovement},
+            {MovementType.fourDirectoinalNoChange, fourDirectionalNoChangeMovement},
+            {MovementType.None, new List<List<Vector2Int>>()}
+        };
     private int xSize, ySize;
     private List<List<Vector2Int>> moveset;
-    public GridLevel(int xSize, int ySize, List<List<Vector2Int>> moveset)
+    public GridLevel(int xSize, int ySize, MovementType movementType)
     {
         this.xSize = xSize;
         this.ySize = ySize;
-        this.moveset = moveset;
+        this.moveset = movementMapping[movementType];
         setCells();
         setRelations();
     }
@@ -275,7 +303,7 @@ public class GridLevel: Level
     }
 }
 
-public class CircleLevel: Level
+public abstract class CircleLevel: Level
 {
     private int cellCount;
     public CircleLevel(int cellCount)
@@ -296,19 +324,65 @@ public class CircleLevel: Level
             this.cells.Add(new Cell(null, position));
         }
     }
+    abstract protected bool hasMove(int startCellIndex, int endCellIndex);
     private void setRelations()
     {
         NeighboringLayer neighboringLayer = new NeighboringLayer();
-        foreach (Cell startCell in cells)
+        for(int i = 0; i < cells.Count; i++)
         {
-            foreach (Cell endCell in cells)
+            for(int j = 0; j < cells.Count; j++)
             {
-                if (startCell != endCell)
+                Cell startCell = cells[i];
+                Cell endCell = cells[j];
+                if (hasMove(i, j) && startCell != endCell)
                 {
                     neighboringLayer.addRelation(startCell, endCell);
                 }
             }
         }
         neighboringLayers.Add(neighboringLayer);
+    }
+}
+
+public class StructuredCircleLevel: CircleLevel
+{
+    public enum MovementType
+    {
+        Any,
+        Clockwise,
+        None
+    }
+    private MovementType movementType;
+    public StructuredCircleLevel(int cellCount, MovementType movementType): base(cellCount)
+    {
+    }
+    protected override bool hasMove(int startCellIndex, int endCellIndex)
+    {
+        if (movementType == MovementType.Any)
+        {
+            return true;
+        }
+        else if (movementType == MovementType.Clockwise)
+        {
+            return ((endCellIndex + cells.Count - startCellIndex) % cells.Count) < (cells.Count / 2);
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+public class CustomCircleLevel: CircleLevel
+{
+    private Dictionary<int, List<int>> neighbors;
+    public CustomCircleLevel(int cellCount, Dictionary<int, List<int>> neighbors): base(cellCount)
+    {
+        this.neighbors = neighbors;
+    }
+
+    protected override bool hasMove(int startCellIndex, int endCellIndex)
+    {
+        return neighbors[startCellIndex].Contains(endCellIndex);
     }
 }

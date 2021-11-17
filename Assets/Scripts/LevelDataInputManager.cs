@@ -30,16 +30,32 @@ public class LevelDataInputManager : MonoBehaviour {
         new Dropdown.OptionData("Grid"),
         new Dropdown.OptionData("Circle")
     };
+    private static Dictionary<Dropdown.OptionData, GridLevel.MovementType> GridMovementOptions =
+        new Dictionary<Dropdown.OptionData, GridLevel.MovementType>() {
+            {new Dropdown.OptionData("Choose Movement"), GridLevel.MovementType.None},
+            {new Dropdown.OptionData("8 Directional"), GridLevel.MovementType.eightDirectoinal},
+            {new Dropdown.OptionData("4 Directional"), GridLevel.MovementType.fourDirectoinal},
+            {new Dropdown.OptionData("8 Directional, straight"), GridLevel.MovementType.eightDirectoinalNoChange},
+            {new Dropdown.OptionData("4 Directional, straight"), GridLevel.MovementType.fourDirectoinalNoChange}
+        };
+    private static Dictionary<Dropdown.OptionData, StructuredCircleLevel.MovementType> CircleMovementOptions =
+        new Dictionary<Dropdown.OptionData, StructuredCircleLevel.MovementType> {
+            {new Dropdown.OptionData("Choose Movement"), StructuredCircleLevel.MovementType.None},
+            {new Dropdown.OptionData("Any Direction"), StructuredCircleLevel.MovementType.Any},
+            {new Dropdown.OptionData("Clockwise"), StructuredCircleLevel.MovementType.Clockwise}
+        };
     [SerializeField]
-    GameObject GridSize;
+    GameObject gridSize;
     [SerializeField]
-    GameObject CircleSize;
+    GameObject circleSize;
     [SerializeField]
-    InputField RowCount;
+    GameObject movementSelection;
     [SerializeField]
-    InputField ColumnCount;
+    InputField rowCount;
     [SerializeField]
-    InputField NodeCount;
+    InputField columnCount;
+    [SerializeField]
+    InputField nodeCount;
     [SerializeField]
     InputField themeInput;
     [SerializeField]
@@ -47,7 +63,9 @@ public class LevelDataInputManager : MonoBehaviour {
     [SerializeField]
     Dropdown APIDropdown;
     [SerializeField]
-    Dropdown levelShapeDropDown;
+    Dropdown levelShapeDropdown;
+    [SerializeField]
+    Dropdown movementDropdown;
     [SerializeField]
     Button generateButton;
     void Start()
@@ -57,7 +75,7 @@ public class LevelDataInputManager : MonoBehaviour {
             instance = this;
             generateButton.interactable = false;
             APIDropdown.options = new List<Dropdown.OptionData>(APIOptions.Keys);
-            levelShapeDropDown.options = LevelShapeOptions;
+            levelShapeDropdown.options = LevelShapeOptions;
         }
         else
         {
@@ -70,20 +88,25 @@ public class LevelDataInputManager : MonoBehaviour {
     }
     public void updateInput()
     {
-        if (levelShapeDropDown.value == GridOptionIndex)
+        if (levelShapeDropdown.value == GridOptionIndex)
         {
-            GridSize.SetActive(true);
-            CircleSize.SetActive(false);
+            gridSize.SetActive(true);
+            circleSize.SetActive(false);
+            movementSelection.SetActive(true);
+            movementDropdown.options = new List<Dropdown.OptionData>(GridMovementOptions.Keys);
         }
-        else if (levelShapeDropDown.value == CircleOptionIndex)
+        else if (levelShapeDropdown.value == CircleOptionIndex)
         {
-            GridSize.SetActive(false);
-            CircleSize.SetActive(true);
+            gridSize.SetActive(false);
+            circleSize.SetActive(true);
+            movementSelection.SetActive(true);
+            movementDropdown.options = new List<Dropdown.OptionData>(CircleMovementOptions.Keys);
         }
         else
         {
-            GridSize.SetActive(false);
-            CircleSize.SetActive(false);
+            gridSize.SetActive(false);
+            circleSize.SetActive(false);
+            movementSelection.SetActive(false);
         }
         if (getLevelData() != null)
         {
@@ -99,20 +122,24 @@ public class LevelDataInputManager : MonoBehaviour {
         string theme = themeInput.text;
         API api = APIOptions[APIDropdown.options[APIDropdown.value]];
         Level level = null;
-        if (levelShapeDropDown.value == GridOptionIndex)
+        if (levelShapeDropdown.value == GridOptionIndex)
         {
             int rows, columns;
-            if (int.TryParse(RowCount.text, out rows) && int.TryParse(ColumnCount.text, out columns))
+            GridLevel.MovementType movementType = GridMovementOptions[movementDropdown.options[movementDropdown.value]];
+            if (int.TryParse(rowCount.text, out rows) && int.TryParse(columnCount.text, out columns) &&
+                movementType != GridLevel.MovementType.None)
             {
-                level = new GridLevel(rows, columns, GridLevel.eightDirectionsMovement);
+                level = new GridLevel(rows, columns, movementType);
             }
         }
-        else if (levelShapeDropDown.value == CircleOptionIndex)
+        else if (levelShapeDropdown.value == CircleOptionIndex)
         {
             int nodeCount;
-            if (int.TryParse(NodeCount.text, out nodeCount))
+            StructuredCircleLevel.MovementType movementType =
+                CircleMovementOptions[movementDropdown.options[movementDropdown.value]];
+            if (int.TryParse(this.nodeCount.text, out nodeCount) && movementType != StructuredCircleLevel.MovementType.None)
             {
-                level = new CircleLevel(nodeCount);
+                level = new StructuredCircleLevel(nodeCount, movementType);
             }
         }
         if (theme.Length == 0 || api == null || level == null)
