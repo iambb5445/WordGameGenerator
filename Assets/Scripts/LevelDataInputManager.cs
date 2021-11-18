@@ -193,6 +193,17 @@ public class LevelDataInputManager : MonoBehaviour {
         }
         return null;
     }
+    public LevelData getLevelData()
+    {
+        string theme = getTheme();
+        WordAPI api = getAPI();
+        Level level = getLevel();
+        if (theme.Length == 0 || api == null || level == null)
+        {
+            return null;
+        }
+        return new LevelData(theme, level, api);
+    }
     public void randomizeInputs()
     {
         difficultySlider.value = Random.Range(difficultySlider.minValue, difficultySlider.maxValue);
@@ -209,16 +220,5 @@ public class LevelDataInputManager : MonoBehaviour {
             nodeCount.text = Random.Range(1, 10).ToString();
         }
         movementDropdown.value = Random.Range(1, movementDropdown.options.Count);
-    }
-    public LevelData getLevelData()
-    {
-        string theme = getTheme();
-        WordAPI api = getAPI();
-        Level level = getLevel();
-        if (theme.Length == 0 || api == null || level == null)
-        {
-            return null;
-        }
-        return new LevelData(theme, level, api);
     }
 }
