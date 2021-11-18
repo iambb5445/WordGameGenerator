@@ -309,6 +309,11 @@ public abstract class CircleLevel: Level
     public CircleLevel(int cellCount)
     {
         this.cellCount = cellCount;
+    }
+    protected void reset()
+    {
+        cells.Clear();
+        neighboringLayers.Clear();
         setCells();
         setRelations();
     }
@@ -319,13 +324,14 @@ public abstract class CircleLevel: Level
             float degreeDiff = 360f / cellCount;
             float degreeDiffRadian = (2 * Mathf.PI) / cellCount;
             float cellDiameter = cellSize * Mathf.Sqrt(2);
-            float radius = cellDiameter / Mathf.Cos(degreeDiffRadian / 2);
+            // float radius = cellDiameter / Mathf.Sin(degreeDiffRadian / 2);
+            float radius = cellSize / Mathf.Sin(degreeDiffRadian / 2);
             Vector2 position = Quaternion.Euler(0, 0, i * degreeDiff) * (Vector2.up * radius);
             this.cells.Add(new Cell(null, position));
         }
     }
     abstract protected bool hasMove(int startCellIndex, int endCellIndex);
-    private void setRelations()
+    protected void setRelations()
     {
         NeighboringLayer neighboringLayer = new NeighboringLayer();
         for(int i = 0; i < cells.Count; i++)
@@ -355,6 +361,8 @@ public class StructuredCircleLevel: CircleLevel
     private MovementType movementType;
     public StructuredCircleLevel(int cellCount, MovementType movementType): base(cellCount)
     {
+        this.movementType = movementType;
+        reset();
     }
     protected override bool hasMove(int startCellIndex, int endCellIndex)
     {
@@ -364,7 +372,7 @@ public class StructuredCircleLevel: CircleLevel
         }
         else if (movementType == MovementType.Clockwise)
         {
-            return ((endCellIndex + cells.Count - startCellIndex) % cells.Count) < (cells.Count / 2);
+            return ((endCellIndex + cells.Count - startCellIndex) % cells.Count) < ((cells.Count - 1) / 2);
         }
         else
         {
@@ -379,8 +387,8 @@ public class CustomCircleLevel: CircleLevel
     public CustomCircleLevel(int cellCount, Dictionary<int, List<int>> neighbors): base(cellCount)
     {
         this.neighbors = neighbors;
+        reset();
     }
-
     protected override bool hasMove(int startCellIndex, int endCellIndex)
     {
         return neighbors[startCellIndex].Contains(endCellIndex);

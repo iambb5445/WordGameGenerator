@@ -18,10 +18,13 @@ public class LevelData
 
 public class LevelDataInputManager : MonoBehaviour {
     private static LevelDataInputManager instance;
+    private static int CustomWordsOptionIndex = 1;
     private static Dictionary<Dropdown.OptionData, API> APIOptions = new Dictionary<Dropdown.OptionData, API>(){
         {new Dropdown.OptionData("Choose API"), null},
+        {new Dropdown.OptionData("Custom Words"), new CustomWordsAPI()},
         {new Dropdown.OptionData("Datamuse Association"), new Datamuse.AssociationAPI()},
-        {new Dropdown.OptionData("Datamuse Similar Meaning"), new Datamuse.SimilarMeaningAPI()}
+        {new Dropdown.OptionData("Datamuse Similar Meaning"), new Datamuse.SimilarMeaningAPI()},
+        {new Dropdown.OptionData("Datamuse Rhyme"), new Datamuse.RhymeAPI()}
     };
     private static int GridOptionIndex = 1;
     private static int CircleOptionIndex = 2;
@@ -51,6 +54,8 @@ public class LevelDataInputManager : MonoBehaviour {
     [SerializeField]
     GameObject movementSelection;
     [SerializeField]
+    GameObject candidateWordsObject;
+    [SerializeField]
     InputField rowCount;
     [SerializeField]
     InputField columnCount;
@@ -68,6 +73,9 @@ public class LevelDataInputManager : MonoBehaviour {
     Dropdown movementDropdown;
     [SerializeField]
     Button generateButton;
+    [SerializeField]
+    InputField candidateWordsInput;
+    private List<string> candidateWords;
     void Start()
     {
         if (instance == null)
@@ -117,11 +125,32 @@ public class LevelDataInputManager : MonoBehaviour {
             generateButton.interactable = false;
         }
     }
-    public LevelData getLevelData()
+    public void askForWords()
     {
-        string theme = themeInput.text;
-        API api = APIOptions[APIDropdown.options[APIDropdown.value]];
-        Level level = null;
+        if (APIDropdown.value == CustomWordsOptionIndex)
+        {
+            candidateWordsObject.SetActive(true);
+        }
+    }
+    public void setCandidateWords()
+    {
+        CustomWordsAPI customWordsAPI = (CustomWordsAPI)(new List<API>(APIOptions.Values)[CustomWordsOptionIndex]);
+        customWordsAPI.setWords(new List<string>(candidateWordsInput.text.Split('\n', ' ')));
+    }
+    public List<string> generateCandidateWords(string theme, int count, API api)
+    {
+        return api.getCandidateWords(theme, count);
+    }
+    private API getAPI()
+    {
+        return APIOptions[APIDropdown.options[APIDropdown.value]];
+    }
+    private string getTheme()
+    {
+        return themeInput.text;
+    }
+    private Level generateLevel()
+    {
         if (levelShapeDropdown.value == GridOptionIndex)
         {
             int rows, columns;
@@ -129,7 +158,7 @@ public class LevelDataInputManager : MonoBehaviour {
             if (int.TryParse(rowCount.text, out rows) && int.TryParse(columnCount.text, out columns) &&
                 movementType != GridLevel.MovementType.None)
             {
-                level = new GridLevel(rows, columns, movementType);
+                return new GridLevel(rows, columns, movementType);
             }
         }
         else if (levelShapeDropdown.value == CircleOptionIndex)
@@ -137,11 +166,20 @@ public class LevelDataInputManager : MonoBehaviour {
             int nodeCount;
             StructuredCircleLevel.MovementType movementType =
                 CircleMovementOptions[movementDropdown.options[movementDropdown.value]];
+            Debug.Log(this.nodeCount.text + " " + movementType);
             if (int.TryParse(this.nodeCount.text, out nodeCount) && movementType != StructuredCircleLevel.MovementType.None)
             {
-                level = new StructuredCircleLevel(nodeCount, movementType);
+                return new StructuredCircleLevel(nodeCount, movementType);
             }
         }
+        return null;
+    }
+    public LevelData getLevelData()
+    {
+        string theme = getTheme();
+        API api = getAPI();
+        Level level = generateLevel();
+        Debug.Log(theme + " " + api + " " + level);
         if (theme.Length == 0 || api == null || level == null)
         {
             return null;

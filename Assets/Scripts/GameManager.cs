@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour {
     public void generateLevelInfo()
     {
         levelData = LevelDataInputManager.getInstance().getLevelData();
-        GameDesigner.design();
+        levelData.level.initiate(levelData.api.getCandidateWords(levelData.theme, 5));
         setGoals();
     }
     public void setGoals()

@@ -6,15 +6,32 @@ using System.IO;
 
 public abstract class API
 {
-    protected string baseUrl;
-    protected API(string baseUrl)
-    {
-        this.baseUrl = baseUrl;
-    }
     public abstract List<string> getCandidateWords(string theme, int count);
 }
 
-public abstract class APIwithReturnType<T>: API
+public abstract class NetworkAPI: API
+{
+    protected string baseUrl;
+    protected NetworkAPI(string baseUrl)
+    {
+        this.baseUrl = baseUrl;
+    }
+}
+
+public class CustomWordsAPI: API
+{
+    private List<string> words;
+    public void setWords(List<string> words)
+    {
+        this.words = words;
+    }
+    public override List<string> getCandidateWords(string theme, int count)
+    {
+        return words;
+    }
+}
+
+public abstract class APIwithReturnType<T>: NetworkAPI
 {
     public APIwithReturnType(string baseUrl): base(baseUrl)
     {
@@ -122,15 +139,27 @@ namespace Datamuse
             return sampleWords(count, false, wordScores);
         }
     }
-}
-
-public class GameDesigner
-{
-    public static void design()
+    public class RhymeAPI: DatamuseAPI<RhymeAPI.DatamuseWord>
     {
-        LevelData levelData = GameManager.getInstance().getLevelData();
-        // TODO choose candidates and their count based on difficulty
-        List<string> candidateWords = levelData.api.getCandidateWords(levelData.theme, 3);
-        levelData.level.initiate(candidateWords);
+        [System.Serializable]
+        public class DatamuseWord
+        {
+            public string word;
+            public int score;
+            public int numSyllables;
+        }
+        public RhymeAPI(): base("https://api.datamuse.com/words?rel_rhy={0}")
+        {
+        }
+        public override List<string> getCandidateWords(string theme, int count)
+        {
+            DatamuseResponse<DatamuseWord> response = this.get(theme);
+            Dictionary<string, int> wordScores = new Dictionary<string, int>();
+            foreach (DatamuseWord word in response.words)
+            {
+                wordScores[word.word] = word.score;
+            }
+            return sampleWords(count, false, wordScores);
+        }
     }
 }
