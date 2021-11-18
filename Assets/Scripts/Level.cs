@@ -324,8 +324,7 @@ public abstract class CircleLevel: Level
             float degreeDiff = 360f / cellCount;
             float degreeDiffRadian = (2 * Mathf.PI) / cellCount;
             float cellDiameter = cellSize * Mathf.Sqrt(2);
-            // float radius = cellDiameter / Mathf.Sin(degreeDiffRadian / 2);
-            float radius = cellSize / Mathf.Sin(degreeDiffRadian / 2);
+            float radius = (cellDiameter / 2) / Mathf.Sin(degreeDiffRadian / 2);
             Vector2 position = Quaternion.Euler(0, 0, i * degreeDiff) * (Vector2.up * radius);
             this.cells.Add(new Cell(null, position));
         }

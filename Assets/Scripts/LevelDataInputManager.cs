@@ -212,12 +212,12 @@ public class LevelDataInputManager : MonoBehaviour {
         levelShapeDropdown.value = Random.Range(1, levelShapeDropdown.options.Count);
         if (levelShapeDropdown.value == GridOptionIndex)
         {
-            rowCount.text = Random.Range(1, 7).ToString();
-            columnCount.text = Random.Range(1, 7).ToString();
+            rowCount.text = Random.Range(2, 7).ToString();
+            columnCount.text = Random.Range(2, 7).ToString();
         }
         else if (levelShapeDropdown.value == CircleOptionIndex)
         {
-            nodeCount.text = Random.Range(1, 10).ToString();
+            nodeCount.text = Random.Range(4, 10).ToString();
         }
         movementDropdown.value = Random.Range(1, movementDropdown.options.Count);
     }
