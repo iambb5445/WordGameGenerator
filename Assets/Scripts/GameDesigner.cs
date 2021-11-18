@@ -4,26 +4,43 @@ using UnityEngine;
 using System.Net;
 using System.IO;
 
-public abstract class API
+public abstract class WordAPI
 {
+    private string relation;
+    public WordAPI(string relation)
+    {
+        this.relation = relation;
+    }
     public abstract List<string> getCandidateWords(string theme, int count);
+    public string getRelation()
+    {
+        return relation;
+    }
+    protected void setRelation(string relation)
+    {
+        this.relation = relation;
+    }
 }
 
-public abstract class NetworkAPI: API
+public abstract class NetworkWordAPI: WordAPI
 {
     protected string baseUrl;
-    protected NetworkAPI(string baseUrl)
+    protected NetworkWordAPI(string baseUrl, string relation): base(relation)
     {
         this.baseUrl = baseUrl;
     }
 }
 
-public class CustomWordsAPI: API
+public class CustomWordsAPI: WordAPI
 {
     private List<string> words;
-    public void setWords(List<string> words)
+    public CustomWordsAPI(): base("")
+    {
+    }
+    public void setWords(List<string> words, string relation)
     {
         this.words = words;
+        setRelation(relation);
     }
     public override List<string> getCandidateWords(string theme, int count)
     {
@@ -31,9 +48,9 @@ public class CustomWordsAPI: API
     }
 }
 
-public abstract class APIwithReturnType<T>: NetworkAPI
+public abstract class APIwithReturnType<T>: NetworkWordAPI
 {
-    public APIwithReturnType(string baseUrl): base(baseUrl)
+    public APIwithReturnType(string baseUrl, string relation): base(baseUrl, relation)
     {
     }
     protected T get(params string[] args)
@@ -86,7 +103,7 @@ namespace Datamuse
     }
     public abstract class DatamuseAPI<T>: APIwithReturnType<DatamuseResponse<T>>
     {
-        public DatamuseAPI(string baseUrl): base(baseUrl)
+        public DatamuseAPI(string baseUrl, string relation): base(baseUrl, relation)
         {
         }
         protected override string alterResponseJson(string json)
@@ -102,7 +119,7 @@ namespace Datamuse
             public string word;
             public int score;
         }
-        public AssociationAPI(): base("https://api.datamuse.com/words?rel_trg={0}")
+        public AssociationAPI(): base("https://api.datamuse.com/words?rel_trg={0}", "are associated with")
         {
         }
         public override List<string> getCandidateWords(string theme, int count)
@@ -125,7 +142,7 @@ namespace Datamuse
             public int score;
             public string[] tags;
         }
-        public SimilarMeaningAPI(): base("https://api.datamuse.com/words?ml={0}")
+        public SimilarMeaningAPI(): base("https://api.datamuse.com/words?ml={0}", "have similar meaning to")
         {
         }
         public override List<string> getCandidateWords(string theme, int count)
@@ -148,7 +165,7 @@ namespace Datamuse
             public int score;
             public int numSyllables;
         }
-        public RhymeAPI(): base("https://api.datamuse.com/words?rel_rhy={0}")
+        public RhymeAPI(): base("https://api.datamuse.com/words?rel_rhy={0}", "rhyme with")
         {
         }
         public override List<string> getCandidateWords(string theme, int count)

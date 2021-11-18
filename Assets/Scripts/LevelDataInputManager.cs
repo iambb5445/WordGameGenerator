@@ -7,8 +7,8 @@ public class LevelData
 {
     public string theme;
     public Level level;
-    public API api;
-    public LevelData(string theme, Level level, API api)
+    public WordAPI api;
+    public LevelData(string theme, Level level, WordAPI api)
     {
         this.theme = theme;
         this.level = level;
@@ -19,7 +19,7 @@ public class LevelData
 public class LevelDataInputManager : MonoBehaviour {
     private static LevelDataInputManager instance;
     private static int CustomWordsOptionIndex = 1;
-    private static Dictionary<Dropdown.OptionData, API> APIOptions = new Dictionary<Dropdown.OptionData, API>(){
+    private static Dictionary<Dropdown.OptionData, WordAPI> APIOptions = new Dictionary<Dropdown.OptionData, WordAPI>(){
         {new Dropdown.OptionData("Choose API"), null},
         {new Dropdown.OptionData("Custom Words"), new CustomWordsAPI()},
         {new Dropdown.OptionData("Datamuse Association"), new Datamuse.AssociationAPI()},
@@ -74,7 +74,11 @@ public class LevelDataInputManager : MonoBehaviour {
     [SerializeField]
     Button generateButton;
     [SerializeField]
+    Button randomizeButton;
+    [SerializeField]
     InputField candidateWordsInput;
+    [SerializeField]
+    InputField relationInput;
     private List<string> candidateWords;
     void Start()
     {
@@ -82,6 +86,7 @@ public class LevelDataInputManager : MonoBehaviour {
         {
             instance = this;
             generateButton.interactable = false;
+            randomizeButton.interactable = false;
             APIDropdown.options = new List<Dropdown.OptionData>(APIOptions.Keys);
             levelShapeDropdown.options = LevelShapeOptions;
         }
@@ -100,6 +105,7 @@ public class LevelDataInputManager : MonoBehaviour {
         {
             gridSize.SetActive(true);
             circleSize.SetActive(false);
+            nodeCount.text = "";
             movementSelection.SetActive(true);
             movementDropdown.options = new List<Dropdown.OptionData>(GridMovementOptions.Keys);
         }
@@ -107,6 +113,8 @@ public class LevelDataInputManager : MonoBehaviour {
         {
             gridSize.SetActive(false);
             circleSize.SetActive(true);
+            rowCount.text = "";
+            columnCount.text = "";
             movementSelection.SetActive(true);
             movementDropdown.options = new List<Dropdown.OptionData>(CircleMovementOptions.Keys);
         }
@@ -124,6 +132,14 @@ public class LevelDataInputManager : MonoBehaviour {
         {
             generateButton.interactable = false;
         }
+        if (getTheme() != null)
+        {
+            randomizeButton.interactable = true;
+        }
+        else
+        {
+            randomizeButton.interactable = false;
+        }
     }
     public void askForWords()
     {
@@ -134,14 +150,14 @@ public class LevelDataInputManager : MonoBehaviour {
     }
     public void setCandidateWords()
     {
-        CustomWordsAPI customWordsAPI = (CustomWordsAPI)(new List<API>(APIOptions.Values)[CustomWordsOptionIndex]);
-        customWordsAPI.setWords(new List<string>(candidateWordsInput.text.Split('\n', ' ')));
+        CustomWordsAPI customWordsAPI = (CustomWordsAPI)(new List<WordAPI>(APIOptions.Values)[CustomWordsOptionIndex]);
+        customWordsAPI.setWords(new List<string>(candidateWordsInput.text.Split('\n', ' ')), relationInput.text);
     }
-    public List<string> generateCandidateWords(string theme, int count, API api)
+    public List<string> generateCandidateWords(string theme, int count, WordAPI api)
     {
         return api.getCandidateWords(theme, count);
     }
-    private API getAPI()
+    private WordAPI getAPI()
     {
         return APIOptions[APIDropdown.options[APIDropdown.value]];
     }
@@ -149,7 +165,11 @@ public class LevelDataInputManager : MonoBehaviour {
     {
         return themeInput.text;
     }
-    private Level generateLevel()
+    public void resetMovementDropDown()
+    {
+        movementDropdown.value = 0;
+    }
+    private Level getLevel()
     {
         if (levelShapeDropdown.value == GridOptionIndex)
         {
@@ -166,7 +186,6 @@ public class LevelDataInputManager : MonoBehaviour {
             int nodeCount;
             StructuredCircleLevel.MovementType movementType =
                 CircleMovementOptions[movementDropdown.options[movementDropdown.value]];
-            Debug.Log(this.nodeCount.text + " " + movementType);
             if (int.TryParse(this.nodeCount.text, out nodeCount) && movementType != StructuredCircleLevel.MovementType.None)
             {
                 return new StructuredCircleLevel(nodeCount, movementType);
@@ -174,12 +193,28 @@ public class LevelDataInputManager : MonoBehaviour {
         }
         return null;
     }
+    public void randomizeInputs()
+    {
+        difficultySlider.value = Random.Range(difficultySlider.minValue, difficultySlider.maxValue);
+        APIDropdown.value = Random.Range(2, APIDropdown.options.Count);
+        resetMovementDropDown();
+        levelShapeDropdown.value = Random.Range(1, levelShapeDropdown.options.Count);
+        if (levelShapeDropdown.value == GridOptionIndex)
+        {
+            rowCount.text = Random.Range(1, 7).ToString();
+            columnCount.text = Random.Range(1, 7).ToString();
+        }
+        else if (levelShapeDropdown.value == CircleOptionIndex)
+        {
+            nodeCount.text = Random.Range(1, 10).ToString();
+        }
+        movementDropdown.value = Random.Range(1, movementDropdown.options.Count);
+    }
     public LevelData getLevelData()
     {
         string theme = getTheme();
-        API api = getAPI();
-        Level level = generateLevel();
-        Debug.Log(theme + " " + api + " " + level);
+        WordAPI api = getAPI();
+        Level level = getLevel();
         if (theme.Length == 0 || api == null || level == null)
         {
             return null;

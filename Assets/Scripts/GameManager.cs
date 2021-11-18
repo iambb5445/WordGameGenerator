@@ -36,7 +36,15 @@ public class GameManager : MonoBehaviour {
     {
         levelData = LevelDataInputManager.getInstance().getLevelData();
         levelData.level.initiate(levelData.api.getCandidateWords(levelData.theme, 5));
+        Debug.Log(getTutorial());
         setGoals();
+    }
+    public string getTutorial()
+    {
+        int goalCount = levelData.level.getGoals().Count;
+        string relation = levelData.api.getRelation();
+        string theme = levelData.theme;
+        return string.Format("Find {0} words that {1} with {2}.", goalCount, relation, theme);
     }
     public void setGoals()
     {
